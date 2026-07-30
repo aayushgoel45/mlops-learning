@@ -5,6 +5,7 @@ from kpi_sentinel.evaluation import evaluate_model
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import mlflow
 
 
 def main():
@@ -19,19 +20,22 @@ def main():
     
     cv = StratifiedKFold(n_splits=4, shuffle = True, random_state=RANDOM_STATE)
 
-    best_model = train_model(X_train, y_train, cv)
+    mlflow.set_experiment("kpi_sentinel_experiment")
 
-    metrics = evaluate_model(
-        best_model,
-        X_test,
-        y_test,
-        )
-    
-    print(f"Test Accuracy: {metrics['accuracy']:.2f}")
-    print("Confusion Matrix:")
-    print(metrics["confusion_matrix"])
-    print("Classification Report:")
-    print(metrics["classification_report"])
+    with mlflow.start_run():
+        best_model = train_model(X_train, y_train, cv)
+
+        metrics = evaluate_model(
+            best_model,
+            X_test,
+            y_test,
+            )
+        
+        print(f"Test Accuracy: {metrics['accuracy']:.2f}")
+        print("Confusion Matrix:")
+        print(metrics["confusion_matrix"])
+        print("Classification Report:")
+        print(metrics["classification_report"])
 
 
 def train_model(X_train, y_train, cv):
